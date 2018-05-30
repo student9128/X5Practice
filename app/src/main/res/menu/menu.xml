@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_show_word"
+        android:title="Word"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_show_ppt"
+        android:title="PPT"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_show_excel"
+        android:title="Excel"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_show_pdf"
+        android:title="Pdf"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_show_txt"
+        android:title="Txt"
+        app:showAsAction="never" />
+</menu>
