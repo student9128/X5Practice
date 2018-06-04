@@ -1,9 +1,19 @@
 package com.practice.kevin.x5practice;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.ContactsContract;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.provider.ContactsContract.CommonDataKinds.StructuredName;
+import android.provider.ContactsContract.Data;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -38,6 +48,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     TextView tvCurrentSize;
     @BindView(R.id.tv_current_file)
     TextView tvCurrentFile;
+    @BindView(R.id.btn_get_contact)
+    Button btnGetContact;
+    private String TAG = getClass().getSimpleName();
     private List<FileInfoBean> data = new ArrayList<>();
     private List<FileInfoBean> fileInfoData = new ArrayList<>();
     private FileListAdapter mAdapter;
@@ -60,10 +73,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         rvRecyclerView.addItemDecoration(decoration);
         rvRecyclerView.setAdapter(mAdapter);
         rvRecyclerView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        btnScan.setOnClickListener(this);
         pbProgressBar.setVisibility(View.GONE);
         mDialog = new LoadingDialog();
+
         mAdapter.setOnRecyclerItemClickListener(this);
+        btnScan.setOnClickListener(this);
+        btnGetContact.setOnClickListener(this);
+
 //
 //        if (mDialog != null && !mDialog.isAdded()) {
 //
@@ -148,14 +164,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     data.add(0, fileInfoBean);
                     final int finalI = i;
                     runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        tvCurrentSize.setText("长度：" + length + "\t索引" + index + "\t集合数量" +
-                                fileInfoData.size());
-                        tvCurrentFile.setText(files[finalI].getName());
-                        mAdapter.updateData(fileInfoData);
-                    }
-                });
+                        @Override
+                        public void run() {
+                            tvCurrentSize.setText("长度：" + length + "\t索引" + index + "\t集合数量" +
+                                    fileInfoData.size());
+                            tvCurrentFile.setText(files[finalI].getName());
+                            mAdapter.updateData(fileInfoData);
+                        }
+                    });
                 }
             }
         }
@@ -200,7 +216,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                    }
 //                };
                 break;
+            case R.id.btn_get_contact:
+                if (ContextCompat.checkSelfPermission(this, android.Manifest.permission
+                        .READ_CONTACTS)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest
+                            .permission.READ_CONTACTS)) {
+
+                    } else {
+
+                        ActivityCompat.requestPermissions(this,
+                                new String[]{android.Manifest.permission.READ_CONTACTS},
+                                1);
+                    }
+                } else {
+                getContactInfo();
+                }
+                break;
         }
+
     }
 
     @Override
@@ -451,6 +485,94 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mDialog.dismiss();
             }
         }
+    }
+
+    private void getContactInfo() {
+        Cursor cursor = getContentResolver().query(Data.CONTENT_URI, null, null,
+                null,
+                Data.RAW_CONTACT_ID);
+        while (cursor.moveToNext()) {
+            int contactId = cursor.getInt(cursor.getColumnIndex(Data.RAW_CONTACT_ID));
+            //mimetype类型
+            String mimeType = cursor.getString(cursor.getColumnIndex(Data.MIMETYPE));
+            if (StructuredName.CONTENT_ITEM_TYPE.equals(mimeType)) {
+                String prefix = getContent(cursor, StructuredName.PREFIX);
+                printLogi("prefix:\t" + prefix);
+                String familyName = getContent(cursor, StructuredName.FAMILY_NAME);
+                printLogi("familyName:\t" + familyName);
+                String middleName = getContent(cursor, StructuredName.MIDDLE_NAME);
+                printLogi("middleName:\t" + middleName);
+                String givenName = getContent(cursor, StructuredName.GIVEN_NAME);
+                printLogi("givenName:\t" + givenName);
+                String suffix = getContent(cursor, StructuredName.SUFFIX);
+                printLogi("suffix:\t" + suffix);
+                String phoneticFamilyName = getContent(cursor, StructuredName.PHONETIC_FAMILY_NAME);
+                printLogi("phoneticFamilyName:\t" + phoneticFamilyName);
+                String phoneticMiddleName = getContent(cursor, StructuredName.PHONETIC_MIDDLE_NAME);
+                printLogi("phoneticMiddleName:\t" + phoneticMiddleName);
+                String phoneticGivenName = getContent(cursor, StructuredName.PHONETIC_GIVEN_NAME);
+                printLogi("phoneticGivenName:\t" + phoneticGivenName);
+            }
+            if (Phone.CONTENT_ITEM_TYPE.equals(mimeType)) {
+                int phoneType = cursor.getInt(cursor.getColumnIndex(
+                        Phone.TYPE));
+                if (phoneType == Phone.TYPE_MOBILE) {
+                    String mobileNumber = getContent(cursor, Phone.NUMBER);
+                    printLogi("mobileNumber:\t" + mobileNumber);
+                }
+                if (phoneType == Phone.TYPE_HOME) {
+                    String homeNumber = getContent(cursor, Phone.NUMBER);
+                    printLogi("homeNumber:\t" + homeNumber);
+                }
+                if (phoneType == Phone.TYPE_WORK) {
+                    String workNumber = getContent(cursor, Phone.NUMBER);
+                    printLogi("workNumber:\t" + workNumber);
+                }
+                if (phoneType == Phone.TYPE_WORK_MOBILE) {
+                    String workMobileNumber = getContent(cursor, Phone.NUMBER);
+                    printLogi("workMobileNumber:\t" + workMobileNumber);
+                }
+                if (phoneType == Phone.TYPE_FAX_HOME) {
+                    String faxHomeNumber = getContent(cursor, Phone.NUMBER);
+                    printLogi("faxHomeNumber:\t" + faxHomeNumber);
+                }
+                if (phoneType == Phone.TYPE_FAX_WORK) {
+                    String faxWorkNumber = getContent(cursor, Phone.NUMBER);
+                    printLogi("faxWorkNumber:\t" + faxWorkNumber);
+                }
+                if (phoneType == Phone.TYPE_ASSISTANT) {
+                    String assistantNum = getContent(cursor, Phone.NUMBER);
+                    printLogi("assistantNum:\t" + assistantNum);
+                }
+
+            }
+        }
+
+    }
+
+    private String getContent(Cursor c, String typeName) {
+        return c.getString(c.getColumnIndex(typeName));
+    }
+
+
+    public void printLoge(String str) {
+        LogK.e(TAG, str);
+    }
+
+    public void printLogd(String str) {
+        LogK.d(TAG, str);
+    }
+
+    public void printLogi(String str) {
+        LogK.i(TAG, str);
+    }
+
+    public void printLogv(String str) {
+        LogK.v(TAG, str);
+    }
+
+    public void printLogw(String str) {
+        LogK.w(TAG, str);
     }
 
 }

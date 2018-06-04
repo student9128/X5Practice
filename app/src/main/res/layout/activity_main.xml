@@ -43,6 +43,18 @@
             android:text="获取文件列表"
             android:textColor="@color/white" />
 
+        <Button
+            android:id="@+id/btn_get_contact"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="10dp"
+            android:background="@color/colorAccent"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="10dp"
+            android:text="获取联系人信息"
+            android:textColor="@color/white" />
+
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rv_recycler_view"
             android:layout_width="match_parent"
